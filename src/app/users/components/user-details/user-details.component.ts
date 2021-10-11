@@ -1,32 +1,31 @@
-import {ChangeDetectionStrategy, Component, OnChanges, OnDestroy, OnInit, SimpleChanges} from '@angular/core';
+import {Component, OnChanges, OnDestroy, OnInit, SimpleChanges} from '@angular/core';
 import {User} from "../../../models/user.model";
 import {Subject} from "rxjs";
-import {UserService} from "../../../service/user.service";
 import {takeUntil} from "rxjs/operators";
 import {ActivatedRoute} from "@angular/router";
+import {Store} from "@ngrx/store";
+import {AppState} from "../../../store/app.reducers";
+import {loadUser} from "../../../store/actions";
 
 @Component({
   selector: 'app-user-details',
   templateUrl: './user-details.component.html',
   styles: []
 })
-export class UserDetailsComponent implements OnInit, OnChanges,OnDestroy {
+export class UserDetailsComponent implements OnInit, OnChanges, OnDestroy {
 
-  user: User | undefined;
+  user: User | undefined | null;
   private destroy$ = new Subject<any>();
 
-  constructor(private userSvc: UserService, private route: ActivatedRoute) {
+  constructor(private storeSvc: Store<AppState>, private route: ActivatedRoute) {
   }
 
   ngOnInit(): void {
     const id = this.route.snapshot.params['userId'];
-    this.userSvc.getUserById(id)
+    this.storeSvc.select('user')
       .pipe(takeUntil(this.destroy$))
-      .subscribe((user) => {
-        //TODO: Si ya está abierta la vista, ésta no hacer la llamada de nuevo
-        console.log(id, user);
-        this.user = user;
-      });
+      .subscribe(({user}) => this.user = user)
+    this.storeSvc.dispatch(loadUser({id}));
   }
 
   ngOnChanges(changes: SimpleChanges) {
