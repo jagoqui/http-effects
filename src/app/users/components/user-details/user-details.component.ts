@@ -12,9 +12,11 @@ import {loadUser} from "../../../store/actions";
   templateUrl: './user-details.component.html',
   styles: []
 })
-export class UserDetailsComponent implements OnInit, OnChanges, OnDestroy {
+export class UserDetailsComponent implements OnInit, OnDestroy {
 
   user: User | undefined | null;
+  loading: boolean = false;
+  error: any;
   private destroy$ = new Subject<any>();
 
   constructor(private storeSvc: Store<AppState>, private route: ActivatedRoute) {
@@ -24,12 +26,12 @@ export class UserDetailsComponent implements OnInit, OnChanges, OnDestroy {
     const id = this.route.snapshot.params['userId'];
     this.storeSvc.select('user')
       .pipe(takeUntil(this.destroy$))
-      .subscribe(({user}) => this.user = user)
+      .subscribe(({user, loading, error}) => {
+        this.user = user;
+        this.loading = loading;
+        this.error = error;
+      })
     this.storeSvc.dispatch(loadUser({id}));
-  }
-
-  ngOnChanges(changes: SimpleChanges) {
-    console.log('entra', changes.id.currentValue, changes.id.previousValue);
   }
 
   ngOnDestroy() {

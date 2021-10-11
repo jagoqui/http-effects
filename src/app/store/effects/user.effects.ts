@@ -19,6 +19,5 @@ export class UserEffects {
   );
 
   constructor(private actions$: Actions, private userSvc: UserService) {
-    console.log('Entra');
   }
 }
